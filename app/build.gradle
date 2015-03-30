@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 16
+    compileSdkVersion 21
     buildToolsVersion '21.1.2'
     defaultConfig {
         applicationId 'com.github.mobile'
-        minSdkVersion 8
-        targetSdkVersion 16
+        minSdkVersion 15
+        targetSdkVersion 21
         versionCode 1900
         versionName '1.9.0'
     }
@@ -43,17 +43,20 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
+    compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'org.roboguice:roboguice:2.0'
-    compile 'com.github.rtyley:roboguice-sherlock:1.5'
     compile 'com.github.kevinsawicki:http-request:5.6'
-    compile 'org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'org.eclipse.mylyn.github:org.eclipse.egit.github.core:3.7.0.201502260915-r'
     compile 'com.android.support:support-v4:21.0.3'
     compile ('com.google.inject.extensions:guice-assistedinject:3.0'){
         exclude group: 'com.google.inject'
     }
     compile 'com.viewpagerindicator:library:2.4.1@aar'
-
+    compile 'com.squareup.okio:okio:1.1.0'
+    compile 'com.squareup.okhttp:okhttp:2.2.0'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.afollestad:material-dialogs:0.6.3.1'
     //Self compiled .aar version of wishlist
     compile (name:'lib', ext:'aar')
 }
