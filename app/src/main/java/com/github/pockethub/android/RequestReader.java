@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -54,8 +55,9 @@ public class RequestReader {
      */
     @SuppressWarnings("unchecked")
     public <V> V read() {
-        if (!handle.exists() || handle.length() == 0)
+        if (!handle.exists() || handle.length() == 0) {
             return null;
+        }
 
         RandomAccessFile dir = null;
         FileLock lock = null;
@@ -72,37 +74,38 @@ public class RequestReader {
                 return null;
             }
             return (V) input.readObject();
-        } catch (IOException e) {
-            Log.d(TAG, "Exception reading cache " + handle.getName(), e);
-            return null;
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | OverlappingFileLockException | ClassNotFoundException e) {
             Log.d(TAG, "Exception reading cache " + handle.getName(), e);
             return null;
         } finally {
-            if (input != null)
+            if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
                     Log.d(TAG, "Exception closing stream", e);
                 }
-            if (delete)
+            }
+            if (delete) {
                 try {
                     dir.setLength(0);
                 } catch (IOException e) {
                     Log.d(TAG, "Exception truncating file", e);
                 }
-            if (lock != null)
+            }
+            if (lock != null) {
                 try {
                     lock.release();
                 } catch (IOException e) {
                     Log.d(TAG, "Exception unlocking file", e);
                 }
-            if (dir != null)
+            }
+            if (dir != null) {
                 try {
                     dir.close();
                 } catch (IOException e) {
                     Log.d(TAG, "Exception closing file", e);
                 }
+            }
         }
     }
 }

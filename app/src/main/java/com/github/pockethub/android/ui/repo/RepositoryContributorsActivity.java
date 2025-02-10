@@ -17,16 +17,14 @@ package com.github.pockethub.android.ui.repo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import androidx.appcompat.app.ActionBar;
 import android.view.MenuItem;
 
 import com.meisolsson.githubsdk.model.Repository;
 import com.meisolsson.githubsdk.model.User;
 import com.github.pockethub.android.Intents;
 import com.github.pockethub.android.R;
-import com.github.pockethub.android.ui.BaseActivity;
-import com.github.pockethub.android.util.AvatarLoader;
-import com.google.inject.Inject;
+import com.github.pockethub.android.ui.base.BaseActivity;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
@@ -49,18 +47,12 @@ public class RepositoryContributorsActivity extends BaseActivity {
 
     private Repository repository;
 
-    @Inject
-    private AvatarLoader avatars;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_repo_contributors);
 
-        repository = getParcelableExtra(EXTRA_REPOSITORY);
-
-        setSupportActionBar((android.support.v7.widget.Toolbar) findViewById(R.id.toolbar));
+        repository = getIntent().getParcelableExtra(EXTRA_REPOSITORY);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(repository.name());
@@ -68,14 +60,13 @@ public class RepositoryContributorsActivity extends BaseActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         User owner = repository.owner();
-        avatars.bind(getSupportActionBar(), owner);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = RepositoryViewActivity.createIntent(repository);
+                Intent intent = RepositoryViewActivity.Companion.createIntent(repository);
                 intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;

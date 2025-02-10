@@ -53,7 +53,6 @@
 
     <!-- Messages de chargement -->
     <string name="loading_gist">Chargement du Gist…</string>
-    <string name="random_gist">Chargement d\'un Gist aléatoire…</string>
     <string name="loading_more_issues">Chargement de plus de tickets…</string>
     <string name="loading_issues">Chargement des tickets…</string>
     <string name="loading_comments">Chargement des commentaires…</string>
@@ -235,7 +234,6 @@
     <string name="unfollowing_user">Désabonnement…</string>
     <string name="starring_repository">Ajout aux favoris…</string>
     <string name="unstarring_repository">Supprimer des favoris…</string>
-    <string name="navigate_to">Aller à…</string>
 
     <!-- Titres des onglets, doivent être aussi courts que possible -->
     <string name="tab_repositories">dépôts</string>
@@ -273,7 +271,6 @@
     <string name="deleting_comment">Suppression du commentaire…</string>
     <string name="deleting_repository">Suppression…</string>
     <string name="editing_comment">Édition du commentaire…</string>
-    <string name="enter_otp_code_title">Code d\'authentification</string>
     <string name="error_deleting_repository">Erreur lors de la suppression</string>
     <string name="error_forking_repository">Erreur lors du fork</string>
     <string name="fork">Fork</string>

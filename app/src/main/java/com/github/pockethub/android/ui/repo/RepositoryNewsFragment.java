@@ -23,17 +23,15 @@ import com.meisolsson.githubsdk.model.Issue;
 import com.meisolsson.githubsdk.model.Page;
 import com.meisolsson.githubsdk.model.Repository;
 import com.meisolsson.githubsdk.model.User;
-import com.github.pockethub.android.core.PageIterator;
-import com.github.pockethub.android.core.ResourcePager;
 import com.github.pockethub.android.core.user.UserEventMatcher.UserPair;
 import com.github.pockethub.android.ui.NewsFragment;
 import com.github.pockethub.android.ui.issue.IssuesViewActivity;
-import com.github.pockethub.android.ui.user.EventPager;
 import com.github.pockethub.android.ui.user.UserViewActivity;
 import com.github.pockethub.android.util.InfoUtils;
 import com.meisolsson.githubsdk.service.activity.EventService;
 
-import rx.Observable;
+import io.reactivex.Single;
+import retrofit2.Response;
 
 import static com.github.pockethub.android.Intents.EXTRA_REPOSITORY;
 
@@ -42,30 +40,20 @@ import static com.github.pockethub.android.Intents.EXTRA_REPOSITORY;
  */
 public class RepositoryNewsFragment extends NewsFragment {
 
+    EventService service = ServiceGenerator.createService(getActivity(), EventService.class);
+
     private Repository repo;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        repo = getParcelableExtra(EXTRA_REPOSITORY);
+        repo = requireActivity().getIntent().getParcelableExtra(EXTRA_REPOSITORY);
     }
 
     @Override
-    protected ResourcePager<GitHubEvent> createPager() {
-        return new EventPager() {
-
-            @Override
-            public PageIterator<GitHubEvent> createIterator(int page, int size) {
-                return new PageIterator<>(new PageIterator.GitHubRequest<Page<GitHubEvent>>() {
-                    @Override
-                    public Observable<Page<GitHubEvent>> execute(int page) {
-                        return ServiceGenerator.createService(getActivity(), EventService.class)
-                                .getRepositoryEvents(repo.owner().login(), repo.name(), page);
-                    }
-                }, page);
-            }
-        };
+    protected Single<Response<Page<GitHubEvent>>> loadData(int page) {
+        return service.getRepositoryEvents(repo.owner().login(), repo.name(), page);
     }
 
     /**
@@ -75,19 +63,20 @@ public class RepositoryNewsFragment extends NewsFragment {
      */
     @Override
     protected void viewRepository(Repository repository) {
-        if (!InfoUtils.createRepoId(repo).equals(InfoUtils.createRepoId(repository)))
+        if (!InfoUtils.createRepoId(repo).equals(InfoUtils.createRepoId(repository))) {
             super.viewRepository(repository);
+        }
     }
 
     @Override
     protected void viewIssue(Issue issue, Repository repository) {
-        startActivity(IssuesViewActivity.createIntent(issue, repo));
+        startActivity(IssuesViewActivity.Companion.createIntent(issue, repo));
     }
 
     @Override
     protected boolean viewUser(User user) {
         if (repo.owner().id() != user.id()) {
-            startActivity(UserViewActivity.createIntent(user));
+            startActivity(UserViewActivity.Companion.createIntent(user));
             return true;
         }
         return false;
@@ -95,7 +84,8 @@ public class RepositoryNewsFragment extends NewsFragment {
 
     @Override
     protected void viewUser(UserPair users) {
-        if (!viewUser(users.from))
+        if (!viewUser(users.from)) {
             viewUser(users.to);
+        }
     }
 }

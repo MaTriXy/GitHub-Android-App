@@ -17,19 +17,17 @@ package com.github.pockethub.android.ui.commit;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.meisolsson.githubsdk.model.Repository;
 import com.github.pockethub.android.Intents.Builder;
 import com.github.pockethub.android.R;
-import com.github.pockethub.android.ui.BaseActivity;
+import com.github.pockethub.android.ui.base.BaseActivity;
 import com.github.pockethub.android.ui.repo.RepositoryViewActivity;
-import com.github.pockethub.android.util.AvatarLoader;
 import com.github.pockethub.android.util.InfoUtils;
-import com.google.inject.Inject;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
@@ -61,34 +59,28 @@ public class CommitCompareViewActivity extends BaseActivity {
 
     private Repository repository;
 
-    @Inject
-    private AvatarLoader avatars;
-
     private Fragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        repository = getIntent().getParcelableExtra(EXTRA_REPOSITORY);
-
         setContentView(R.layout.commit_compare);
 
-        setSupportActionBar((android.support.v7.widget.Toolbar) findViewById(R.id.toolbar));
+        repository = getIntent().getParcelableExtra(EXTRA_REPOSITORY);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setSubtitle(InfoUtils.createRepoId(repository));
-        avatars.bind(actionBar, repository.owner());
 
         fragment = getSupportFragmentManager()
-            .findFragmentById(android.R.id.list);
+            .findFragmentById(R.id.list);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu optionsMenu) {
-        if (fragment != null)
+        if (fragment != null) {
             fragment.onCreateOptionsMenu(optionsMenu, getMenuInflater());
+        }
 
         return super.onCreateOptionsMenu(optionsMenu);
     }
@@ -97,15 +89,16 @@ public class CommitCompareViewActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = RepositoryViewActivity.createIntent(repository);
+                Intent intent = RepositoryViewActivity.Companion.createIntent(repository);
                 intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
             default:
-                if (fragment != null)
+                if (fragment != null) {
                     return fragment.onOptionsItemSelected(item);
-                else
+                } else {
                     return super.onOptionsItemSelected(item);
+                }
         }
     }
 }

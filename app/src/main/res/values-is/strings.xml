@@ -53,7 +53,6 @@
 
     <!-- Loading messages -->
     <string name="loading_gist">Sækir Gist…</string>
-    <string name="random_gist">Sækir Gist að handahófi…</string>
     <string name="loading_more_issues">Sækir fleiri vandamál…</string>
     <string name="loading_issues">Sækir vandamál…</string>
     <string name="loading_comments">Sækir athugasemdir…</string>
@@ -150,8 +149,6 @@
     <string name="select_milestone">Velja útgáfu</string>
     <string name="select_labels">Velja merki</string>
     <string name="select_ref">Velja greinar eða merki</string>
-    <string name="enter_otp_code_title">Auðkenniskóði</string>
-    <string name="enter_otp_code_message">Tveggja skrefa auðkenning hefur verið gerð virk fyrir aðganginn þinn. Sláðu inn auðkenniskóðann til að gera grein fyrir þér</string>
     <string name="no_milestone">Engin útgáfa</string>
     <string name="unassigned">Engin hefur verið útvaldur</string>
     <string name="assigned">er útvaldur</string>
@@ -242,7 +239,6 @@
     <string name="unfollowing_user">Hættir að fylgjast með…</string>
     <string name="starring_repository">Stjörnumerkir…</string>
     <string name="unstarring_repository">Tekur stjörnumerkingu af…</string>
-    <string name="navigate_to">Fer til…</string>
     <string name="navigate_to_user">Fara til %s</string>
     <string name="contributions">%d færslur</string>
 

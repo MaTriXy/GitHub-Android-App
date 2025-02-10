@@ -16,8 +16,8 @@
 package com.github.pockethub.android.ui.issue;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
@@ -25,15 +25,11 @@ import com.meisolsson.githubsdk.model.Issue;
 import com.meisolsson.githubsdk.model.Repository;
 import com.meisolsson.githubsdk.model.User;
 import com.github.pockethub.android.core.issue.IssueStore;
-import com.github.pockethub.android.ui.FragmentStatePagerAdapter;
+import com.github.pockethub.android.ui.base.FragmentStatePagerAdapter;
 
 import java.util.List;
 
 import static com.github.pockethub.android.Intents.*;
-import static com.github.pockethub.android.Intents.EXTRA_ISSUE_NUMBER;
-import static com.github.pockethub.android.Intents.EXTRA_REPOSITORY_NAME;
-import static com.github.pockethub.android.Intents.EXTRA_REPOSITORY_OWNER;
-import static com.github.pockethub.android.Intents.EXTRA_USER;
 
 
 /**
@@ -106,8 +102,9 @@ public class IssuesPagerAdapter extends FragmentStatePagerAdapter {
             Issue issue = store.getIssue(repo, issues[position]);
             if (issue != null && issue.user() != null) {
                 Repository fullRepo = issue.repository();
-                if (fullRepo != null && fullRepo.owner() != null)
+                if (fullRepo != null && fullRepo.owner() != null) {
                     args.putParcelable(EXTRA_USER, fullRepo.owner());
+                }
             }
         }
         args.putInt(EXTRA_ISSUE_NUMBER, issues[position]);
@@ -126,8 +123,9 @@ public class IssuesPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         Object fragment = super.instantiateItem(container, position);
-        if (fragment instanceof IssueFragment)
+        if (fragment instanceof IssueFragment) {
             fragments.put(position, (IssueFragment) fragment);
+        }
         return fragment;
     }
 
@@ -148,8 +146,9 @@ public class IssuesPagerAdapter extends FragmentStatePagerAdapter {
     public IssuesPagerAdapter onDialogResult(int position, int requestCode,
             int resultCode, Bundle arguments) {
         IssueFragment fragment = fragments.get(position);
-        if (fragment != null)
+        if (fragment != null) {
             fragment.onDialogResult(requestCode, resultCode, arguments);
+        }
         return this;
     }
 }

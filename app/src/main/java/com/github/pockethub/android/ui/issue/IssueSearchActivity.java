@@ -19,35 +19,27 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import com.meisolsson.githubsdk.model.Repository;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
 import com.github.pockethub.android.R;
+import com.github.pockethub.android.ui.base.BaseActivity;
 import com.github.pockethub.android.ui.repo.RepositoryViewActivity;
-import com.github.pockethub.android.ui.roboactivities.RoboAppCompatActivity;
-import com.github.pockethub.android.util.AvatarLoader;
 import com.github.pockethub.android.util.InfoUtils;
 import com.github.pockethub.android.util.ToastUtils;
-import com.google.inject.Inject;
+import com.meisolsson.githubsdk.model.Repository;
 
 import static android.app.SearchManager.APP_DATA;
 import static android.app.SearchManager.QUERY;
-import static android.content.Intent.ACTION_SEARCH;
-import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
-import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
+import static android.content.Intent.*;
 import static com.github.pockethub.android.Intents.EXTRA_REPOSITORY;
 
 /**
  * Activity to search issues
  */
-public class IssueSearchActivity extends RoboAppCompatActivity {
-
-    @Inject
-    private AvatarLoader avatars;
+public class IssueSearchActivity extends BaseActivity {
 
     private Repository repository;
 
@@ -76,19 +68,14 @@ public class IssueSearchActivity extends RoboAppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.m_search:
-                searchView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        searchView.setQuery(lastQuery, false);
-                    }
-                });
+                searchView.post(() -> searchView.setQuery(lastQuery, false));
                 return true;
             case R.id.m_clear:
                 IssueSearchSuggestionsProvider.clear(this);
                 ToastUtils.show(this, R.string.search_history_cleared);
                 return true;
             case android.R.id.home:
-                Intent intent = RepositoryViewActivity.createIntent(repository);
+                Intent intent = RepositoryViewActivity.Companion.createIntent(repository);
                 intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;
@@ -100,10 +87,7 @@ public class IssueSearchActivity extends RoboAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_issue_search);
-
-        setSupportActionBar((android.support.v7.widget.Toolbar) findViewById(R.id.toolbar));
 
         ActionBar actionBar = getSupportActionBar();
         Bundle appData = getIntent().getBundleExtra(APP_DATA);
@@ -112,12 +96,11 @@ public class IssueSearchActivity extends RoboAppCompatActivity {
             if (repository != null) {
                 actionBar.setSubtitle(InfoUtils.createRepoId(repository));
                 actionBar.setDisplayHomeAsUpEnabled(true);
-                avatars.bind(actionBar, repository.owner());
             }
         }
 
         issueFragment = (SearchIssueListFragment) getSupportFragmentManager()
-            .findFragmentById(android.R.id.list);
+            .findFragmentById(R.id.list);
 
         handleIntent(getIntent());
     }
@@ -125,14 +108,14 @@ public class IssueSearchActivity extends RoboAppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        issueFragment.setListShown(false);
         handleIntent(intent);
-        issueFragment.refresh();
+        issueFragment.pagedListFetcher.refresh();
     }
 
     private void handleIntent(Intent intent) {
-        if (ACTION_SEARCH.equals(intent.getAction()))
+        if (ACTION_SEARCH.equals(intent.getAction())) {
             search(intent.getStringExtra(QUERY));
+        }
     }
 
     private void search(final String query) {

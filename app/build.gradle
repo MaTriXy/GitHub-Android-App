@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'com.github.ben-manes.versions'   // ./gradlew dependencyUpdates -Drevision=release
+apply plugin: 'com.squareup.sqldelight'
+//apply from: 'quality.gradle'
 
 repositories {
     flatDir {
@@ -9,7 +14,7 @@ repositories {
 
 // Manifest version information!
 def versionMajor = 0
-def versionMinor = 2
+def versionMinor = 5
 def versionPatch = 1
 def versionBuild = 0 // bump for dogfood builds, public betas, etc.
 
@@ -18,17 +23,38 @@ def preDexEnabled = "true".equals(System.getProperty("pre-dex", "true"))
 def clientIdIsNotSet = true;
 def clientSecretIsNotSet = true;
 
+def addConfigValues = { name, isDebug, suffix = "" ->
+    def value = (isDebug ? "com.github.debug" : "com.github") + suffix
+
+    android.defaultConfig.buildConfigField "String", name, "\"${value}\""
+    android.defaultConfig.resValue "string", name.toLowerCase(), value
+}
+
+sqldelight {
+    Database {
+        packageName = "com.github.pockethub.android"
+    }
+}
+
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId 'com.github.pockethub.android'
-        minSdkVersion 15
-        targetSdkVersion 25
+        minSdkVersion 19
+        targetSdkVersion 28
+        multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testOptions.unitTests.includeAndroidResources = true
+
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         vectorDrawables.useSupportLibrary = true
+
+        addConfigValues("ACCOUNT_TYPE", false)
+        addConfigValues("PROVIDER_AUTHORITY_SYNC", false, ".sync")
+        addConfigValues("PROVIDER_AUTHORITY_SEARCH_SUGGEST_ISSUES", false, ".search.suggest.recent.issues")
+        addConfigValues("PROVIDER_AUTHORITY_SEARCH_SUGGEST_REPOS", false, ".search.suggest.recent.repos")
 
         if (project.hasProperty('pockethub_github_client')) {
             resValue "string", "github_client", pockethub_github_client
@@ -66,11 +92,40 @@ android {
         resValue "string", "github_oauth_scheme", oauth.split("://")[0]
     }
 
+
     buildTypes {
+        debug {
+            addConfigValues("ACCOUNT_TYPE", true)
+            addConfigValues("PROVIDER_AUTHORITY_SYNC", true, ".sync")
+            addConfigValues("PROVIDER_AUTHORITY_SEARCH_SUGGEST_ISSUES", true, ".search.suggest.recent.issues")
+            addConfigValues("PROVIDER_AUTHORITY_SEARCH_SUGGEST_REPOS", true, ".search.suggest.recent.repos")
+            applicationIdSuffix ".debug"
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+    testOptions {
+        animationsDisabled = true
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    configurations {
+        implementation.exclude group: 'org.jetbrains', module: 'annotations'
     }
 
     packagingOptions {
@@ -99,37 +154,79 @@ android {
     }
 }
 
+androidExtensions {
+    experimental = true
+}
+
+kapt {
+    correctErrorTypes = true
+}
+
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    def supportVersion = '25.0.0'
-    compile "com.android.support:appcompat-v7:$supportVersion"
-    compile "com.android.support:support-v4:$supportVersion"
-    compile "com.android.support:design:$supportVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.squareup.okhttp:okhttp:2.7.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
 
-    compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'com.trello:rxlifecycle:0.4.0'
-    compile 'com.bugsnag:bugsnag-android:3.2.7'
-    compile 'org.roboguice:roboguice:2.0'
+    final def markwon_version = '4.3.0'
+    implementation "io.noties.markwon:core:$markwon_version"
+    implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
+    implementation "io.noties.markwon:ext-tasklist:$markwon_version"
+    implementation "io.noties.markwon:html:$markwon_version"
+    implementation "io.noties.markwon:image:$markwon_version"
+    implementation "io.noties.markwon:image-glide:$markwon_version"
+    implementation "io.noties.markwon:linkify:$markwon_version"
+    implementation "io.noties.markwon:recycler-table:$markwon_version"
+    implementation "io.noties.markwon:syntax-highlight:$markwon_version"
 
-    compile 'com.github.meisolsson:githubsdk:0.1.8'
+    implementation "com.caverock:androidsvg:1.4"
+    implementation "pl.droidsonroids.gif:android-gif-drawable:1.2.19"
 
-    compile ('com.google.inject.extensions:guice-assistedinject:3.0'){
-        exclude group: 'com.google.inject'
-    }
-    compile 'com.afollestad.material-dialogs:core:0.9.1.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation "com.github.bumptech.glide:okhttp3-integration:4.11.0"
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
-    //Self compiled .aar version of wishlist
-    compile (name:'lib', ext:'aar')
+    kapt 'io.noties:prism4j-bundler:2.0.0'
+
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation "com.squareup.sqldelight:android-driver:1.2.2"
+
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.10'
+    implementation 'com.uber.autodispose:autodispose:0.6.1'
+    implementation 'com.uber.autodispose:autodispose-android-archcomponents:0.6.1'
+
+    implementation 'com.bugsnag:bugsnag-android:4.3.1'
+
+    implementation 'com.google.dagger:dagger:2.27'
+    implementation 'com.google.dagger:dagger-android:2.27'
+    implementation 'com.google.dagger:dagger-android-support:2.27'
+    
+    kapt 'com.google.dagger:dagger-compiler:2.27'
+    kapt 'com.google.dagger:dagger-android-processor:2.27'
+
+    compileOnly 'com.episode6.hackit.auto.factory:auto-factory-annotations:1.0-beta5'
+    kapt 'com.google.auto.factory:auto-factory:1.0-beta7'
+
+    implementation 'com.github.meisolsson:githubsdk:0.7.0'
+    implementation "com.squareup.moshi:moshi:1.9.2"
+    implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.xwray:groupie:2.3.0'
+    implementation 'com.xwray:groupie-kotlin-android-extensions:2.3.0'
+
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.1.0'
+    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
 
     //Libs for testing
-    testCompile 'junit:junit:4.12'
-    testCompile "org.mockito:mockito-core:1.9.5"
-    testCompile('org.robolectric:robolectric:3.0') {
-        exclude group: 'commons-logging', module: 'commons-logging'
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "androidx.test:core:1.2.0"
+    testImplementation "org.mockito:mockito-core:2.18.3"
+    testImplementation "org.robolectric:robolectric:4.2.1"
 }

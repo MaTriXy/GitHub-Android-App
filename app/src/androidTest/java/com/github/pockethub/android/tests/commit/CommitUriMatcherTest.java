@@ -16,19 +16,29 @@
 package com.github.pockethub.android.tests.commit;
 
 import android.net.Uri;
-import android.test.AndroidTestCase;
 
+import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 import com.github.pockethub.android.core.commit.CommitMatch;
 import com.github.pockethub.android.core.commit.CommitUriMatcher;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Tests of {@link CommitUriMatcher}
  */
-public class CommitUriMatcherTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+@SmallTest
+public class CommitUriMatcherTest {
 
     /**
      * Verity empty uri
      */
+    @Test
     public void testEmptyUri() {
         assertNull(CommitUriMatcher.getCommit(Uri.parse("")));
     }
@@ -44,43 +54,46 @@ public class CommitUriMatcherTest extends AndroidTestCase {
     /**
      * Verify http uri
      */
+    @Test
     public void testHttpUri() {
         CommitMatch commit = CommitUriMatcher.getCommit(Uri
                 .parse("https://github.com/defunkt/resque/commit/abcd"));
         assertNotNull(commit);
-        assertEquals("abcd", commit.commit);
-        assertNotNull(commit.repository);
-        assertEquals("resque", commit.repository.name());
-        assertNotNull(commit.repository.owner());
-        assertEquals("defunkt", commit.repository.owner().login());
+        assertEquals("abcd", commit.getCommit());
+        assertNotNull(commit.getRepository());
+        assertEquals("resque", commit.getRepository().name());
+        assertNotNull(commit.getRepository().owner());
+        assertEquals("defunkt", commit.getRepository().owner().login());
     }
 
     /**
      * Verify https uri
      */
+    @Test
     public void testHttpsUri() {
         CommitMatch commit = CommitUriMatcher.getCommit(Uri
                 .parse("https://github.com/defunkt/resque/commit/1234"));
         assertNotNull(commit);
-        assertEquals("1234", commit.commit);
-        assertNotNull(commit.repository);
-        assertEquals("resque", commit.repository.name());
-        assertNotNull(commit.repository.owner());
-        assertEquals("defunkt", commit.repository.owner().login());
+        assertEquals("1234", commit.getCommit());
+        assertNotNull(commit.getRepository());
+        assertEquals("resque", commit.getRepository().name());
+        assertNotNull(commit.getRepository().owner());
+        assertEquals("defunkt", commit.getRepository().owner().login());
     }
 
     /**
      * Verify uri with comment fragment
      */
+    @Test
     public void testCommentUri() {
         CommitMatch commit = CommitUriMatcher
                 .getCommit(Uri
                         .parse("https://github.com/defunkt/resque/commit/a1b2#commitcomment-1605701"));
         assertNotNull(commit);
-        assertEquals("a1b2", commit.commit);
-        assertNotNull(commit.repository);
-        assertEquals("resque", commit.repository.name());
-        assertNotNull(commit.repository.owner());
-        assertEquals("defunkt", commit.repository.owner().login());
+        assertEquals("a1b2", commit.getCommit());
+        assertNotNull(commit.getRepository());
+        assertEquals("resque", commit.getRepository().name());
+        assertNotNull(commit.getRepository().owner());
+        assertEquals("defunkt", commit.getRepository().owner().login());
     }
 }

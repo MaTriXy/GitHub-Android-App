@@ -52,7 +52,6 @@
 
     <!-- Mensagens de carregamento -->
     <string name="loading_gist">Carregando Gist…</string>
-    <string name="random_gist">Carregando Gist Aleatório…</string>
     <string name="loading_more_issues">Carregando Mais Incidentes…</string>
     <string name="loading_issues">Carregando Incidentes…</string>
     <string name="loading_comments">Carregando Comentários…</string>
@@ -150,8 +149,6 @@
     <string name="select_milestone">Selecionar Milestone</string>
     <string name="select_labels">Selecionar Rótulos</string>
     <string name="select_ref">Selecionar Branch ou Rótulo</string>
-    <string name="enter_otp_code_title">Código de autenticação</string>
-    <string name="enter_otp_code_message">Dupla autenticação está ativada para sua conta. Entre com o código de autenticação para verificar sua identidade.</string>
     <string name="no_milestone">Nenhuma milestone</string>
     <string name="unassigned">Nenhum responsável</string>
     <string name="assigned">é o responsável</string>
@@ -239,7 +236,6 @@
     <string name="unfollowing_user">Deixando de seguir…</string>
     <string name="starring_repository">Marcando estrela…</string>
     <string name="unstarring_repository">Desmarcando estrela…</string>
-    <string name="navigate_to">Navegando para…</string>
     <string name="navigate_to_user">Navegando para %s</string>
     <string name="contributions">%d commits</string>
 

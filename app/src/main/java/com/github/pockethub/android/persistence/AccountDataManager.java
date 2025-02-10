@@ -21,29 +21,28 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
-import com.github.pockethub.android.RequestFuture;
+import com.github.pockethub.android.GetFilterLabels;
+import com.github.pockethub.android.GetFilters;
 import com.github.pockethub.android.RequestReader;
 import com.github.pockethub.android.RequestWriter;
+import com.github.pockethub.android.Users;
 import com.github.pockethub.android.core.issue.IssueFilter;
-import com.github.pockethub.android.persistence.OrganizationRepositories.Factory;
-import com.github.pockethub.android.rx.ObserverAdapter;
+import com.meisolsson.githubsdk.model.Label;
+import com.meisolsson.githubsdk.model.Milestone;
+import com.meisolsson.githubsdk.model.Permissions;
 import com.meisolsson.githubsdk.model.Repository;
 import com.meisolsson.githubsdk.model.User;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import io.reactivex.Single;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import rx.Observable;
-import rx.Subscriber;
 
 /**
  * Manager cache for an account
@@ -61,20 +60,23 @@ public class AccountDataManager {
     private static final int FORMAT_VERSION = 4;
 
     @Inject
-    private Context context;
+    protected Context context;
 
     @Inject
-    private DatabaseCache dbCache;
+    protected DatabaseCache dbCache;
 
     @Inject
-    private Factory allRepos;
+    protected OrganizationRepositoriesFactory allRepos;
 
     @Inject
-    private Organizations userAndOrgsResource;
+    protected Organizations userAndOrgsResource;
 
     @Inject
     @Named("cacheDir")
-    private File root;
+    protected File root;
+
+    @Inject
+    public AccountDataManager() {}
 
     /**
      * @return context
@@ -94,11 +96,12 @@ public class AccountDataManager {
         long start = System.currentTimeMillis();
         long length = file.length();
         Object data = new RequestReader(file, FORMAT_VERSION).read();
-        if (data != null)
+        if (data != null) {
             Log.d(TAG, MessageFormat.format(
                     "Cache hit to {0}, {1} ms to load {2} bytes",
                     file.getName(), (System.currentTimeMillis() - start),
                     length));
+        }
         return (V) data;
     }
 
@@ -174,7 +177,7 @@ public class AccountDataManager {
      */
     public List<Repository> getRepos(final User user, boolean forceReload)
             throws IOException {
-        OrganizationRepositories resource = allRepos.under(user);
+        OrganizationRepositories resource = allRepos.create(user);
         return forceReload ? dbCache.requestAndStore(resource) : dbCache
                 .loadOrRequest(resource);
     }
@@ -187,32 +190,93 @@ public class AccountDataManager {
      *
      * @return non-null but possibly empty collection of issue filters
      */
-    public Collection<IssueFilter> getIssueFilters() {
-        final File cache = new File(root, "issue_filters.ser");
-        Collection<IssueFilter> cached = read(cache);
-        if (cached != null)
-            return cached;
-        return Collections.emptyList();
-    }
+    public List<IssueFilter> getIssueFilters() {
+        List<GetFilters> filters = dbCache.database.getIssue_filterQueries()
+                .getFilters()
+                .executeAsList();
 
-    /**
-     * Get bookmarked issue filters
-     *
-     * @param requestFuture
-     */
-    public void getIssueFilters(
-            final RequestFuture<Collection<IssueFilter>> requestFuture) {
-        Observable.create(new Observable.OnSubscribe<Collection<IssueFilter>>() {
-            @Override
-            public void call(Subscriber<? super Collection<IssueFilter>> subscriber) {
-                subscriber.onNext(getIssueFilters());
+        List<IssueFilter> issueFilters = new ArrayList<>();
+
+        for (GetFilters f : filters) {
+            Users owner = dbCache.database.getOrganizationsQueries().selectUser(f.getOwnerId()).executeAsOne();
+
+            Repository.Builder builder = Repository.builder()
+                    .id(f.getRepoId())
+                    .name(f.getName())
+                    .owner(
+                            User.builder()
+                                    .id(owner.getId())
+                                    .login(owner.getLogin())
+                                    .name(owner.getName())
+                                    .avatarUrl(owner.getAvatarurl())
+                                    .build()
+                    )
+                    .isPrivate(f.getPrivate())
+                    .isFork(f.getFork())
+                    .description(f.getDescription())
+                    .forksCount(f.getForks())
+                    .watchersCount(f.getWatchers())
+                    .language(f.getLanguage())
+                    .hasIssues(f.getHasIssues())
+                    .mirrorUrl(f.getMirrorUrl())
+                    .permissions(
+                            Permissions.builder()
+                                    .admin(f.getPermissions_admin())
+                                    .pull(f.getPermissions_pull())
+                                    .push(f.getPermissions_push())
+                                    .build()
+                    );
+
+            if (f.getOrgId() != null) {
+                Users org = dbCache.database.getOrganizationsQueries().selectUser(f.getOrgId()).executeAsOne();
+                builder.organization(
+                        User.builder()
+                                .id(org.getId())
+                                .login(org.getLogin())
+                                .name(org.getName())
+                                .avatarUrl(org.getAvatarurl())
+                                .build()
+                );
             }
-        }).subscribe(new ObserverAdapter<Collection<IssueFilter>>() {
-            @Override
-            public void onNext(Collection<IssueFilter> filters) {
-                requestFuture.success(filters);
+
+            Repository repo = builder.build();
+            IssueFilter filter = new IssueFilter(repo, f.getId());
+            if (f.getLogin() != null) {
+                filter.setAssignee(
+                        User.builder()
+                                .id(f.getId__())
+                                .name(f.getName_())
+                                .login(f.getLogin())
+                                .avatarUrl(f.getAvatarurl())
+                                .build()
+                );
             }
-        });
+
+            if (f.getMilestone_id() != null) {
+                filter.setMilestone(Milestone.builder().id(f.getMilestone_id()).build());
+            }
+
+            filter.setDirection(f.getDirection());
+            filter.setOpen(f.getOpen());
+            filter.setSortType(f.getSort_type());
+
+            List<GetFilterLabels> filterLabels = dbCache.database.getIssue_filterQueries()
+                    .getFilterLabels(filter.getId())
+                    .executeAsList();
+
+            for (GetFilterLabels filterLabel : filterLabels) {
+                filter.addLabel(
+                        Label.builder()
+                                .name(filterLabel.getName())
+                                .color(filterLabel.getColor())
+                                .build()
+                );
+            }
+
+            issueFilters.add(filter);
+        }
+
+        return issueFilters;
     }
 
     /**
@@ -223,40 +287,68 @@ public class AccountDataManager {
      *
      * @param filter
      */
-    public void addIssueFilter(IssueFilter filter) {
-        final File cache = new File(root, "issue_filters.ser");
-        Collection<IssueFilter> filters = read(cache);
-        if (filters == null)
-            filters = new HashSet<>();
-        if (filters.add(filter))
-            write(cache, filters);
-    }
+    public Single<IssueFilter> addIssueFilter(final IssueFilter filter) {
+        Repository repo = filter.getRepository();
+        dbCache.getDatabase().getRepositoriesQueries().replaceRepo(
+                repo.id(),
+                repo.name(),
+                repo.organization() != null ? repo.organization().id() : null,
+                repo.owner().id(),
+                repo.isPrivate(),
+                repo.isFork(),
+                repo.description(),
+                repo.forksCount(),
+                repo.watchersCount(),
+                repo.language(),
+                repo.hasIssues(),
+                repo.mirrorUrl(),
+                repo.permissions().admin(),
+                repo.permissions().pull(),
+                repo.permissions().push()
+        );
 
-    /**
-     * Add issue filter to store
-     *
-     * @param filter
-     * @param requestFuture
-     */
-    public void addIssueFilter(final IssueFilter filter,
-            final RequestFuture<IssueFilter> requestFuture) {
-        Observable.create(new Observable.OnSubscribe<IssueFilter>() {
-            @Override
-            public void call(Subscriber<? super IssueFilter> subscriber) {
-                addIssueFilter(filter);
-                subscriber.onNext(filter);
-            }
-        }).subscribe(new ObserverAdapter<IssueFilter>() {
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, "Exception adding issue filter", e);
-            }
+        for (Label label : filter.getLabels()) {
+            dbCache.database.getIssue_filterQueries().insertOrReplaceLabel(
+                    repo.id(),
+                    label.name(),
+                    label.color()
+            );
+            dbCache.database.getIssue_filterQueries().insertOrReplaceIssueFilterLabel(
+                    filter.getId(),
+                    repo.id(),
+                    label.name()
+            );
+        }
 
-            @Override
-            public void onNext(IssueFilter issueFilter) {
-                requestFuture.success(issueFilter);
-            }
-        });
+        if (filter.getMilestone() != null) {
+            dbCache.database.getIssue_filterQueries().insertOrReplaceMilestone(
+                    repo.id(),
+                    filter.getMilestone().title(),
+                    filter.getMilestone().state(),
+                    filter.getMilestone().id(),
+                    filter.getMilestone().number().longValue()
+            );
+        }
+
+        if (filter.getAssignee() != null) {
+            dbCache.database.getOrganizationsQueries().replaceUser(
+                    filter.getAssignee().id(),
+                    filter.getAssignee().login(),
+                    filter.getAssignee().name(),
+                    filter.getAssignee().avatarUrl()
+            );
+        }
+
+        dbCache.database.getIssue_filterQueries().insertOrReplaceIssueFilter(
+                filter.getId(),
+                repo.id(),
+                filter.getMilestone() != null ? filter.getMilestone().id() : null,
+                filter.getAssignee() != null ? filter.getAssignee().id() : null,
+                filter.isOpen(),
+                filter.getDirection(),
+                filter.getSortType()
+        );
+        return Single.just(filter);
     }
 
     /**
@@ -267,37 +359,16 @@ public class AccountDataManager {
      *
      * @param filter
      */
-    public void removeIssueFilter(IssueFilter filter) {
-        final File cache = new File(root, "issue_filters.ser");
-        Collection<IssueFilter> filters = read(cache);
-        if (filters != null && filters.remove(filter))
-            write(cache, filters);
-    }
+    public Single<IssueFilter> removeIssueFilter(IssueFilter filter) {
+        dbCache.database.getIssue_filterQueries().removeIssueFilter(filter.getId());
+        for (Label label : filter.getLabels()) {
+            dbCache.database.getIssue_filterQueries().removeIssueFilterLabel(
+                    filter.getId(),
+                    filter.getRepository().id(),
+                    label.name()
+            );
+        }
 
-    /**
-     * Remove issue filter from store
-     *
-     * @param filter
-     * @param requestFuture
-     */
-    public void removeIssueFilter(final IssueFilter filter,
-            final RequestFuture<IssueFilter> requestFuture) {
-        Observable.create(new Observable.OnSubscribe<IssueFilter>() {
-            @Override
-            public void call(Subscriber<? super IssueFilter> subscriber) {
-                removeIssueFilter(filter);
-                subscriber.onNext(filter);
-            }
-        }).subscribe(new ObserverAdapter<IssueFilter>() {
-            @Override
-            public void onNext(IssueFilter issueFilter) {
-                requestFuture.success(issueFilter);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.d(TAG, "Exception removing issue filter", e);
-            }
-        });
+        return Single.just(filter);
     }
 }

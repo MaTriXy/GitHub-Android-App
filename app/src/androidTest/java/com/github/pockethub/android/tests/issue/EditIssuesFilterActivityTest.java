@@ -15,31 +15,29 @@
  */
 package com.github.pockethub.android.tests.issue;
 
-import com.meisolsson.githubsdk.model.Repository;
+import androidx.test.rule.ActivityTestRule;
 import com.github.pockethub.android.core.issue.IssueFilter;
-import com.github.pockethub.android.tests.ActivityTest;
 import com.github.pockethub.android.ui.issue.EditIssuesFilterActivity;
 import com.github.pockethub.android.util.InfoUtils;
+import com.meisolsson.githubsdk.model.Repository;
+import org.junit.Before;
+import org.junit.Rule;
+
+import java.util.UUID;
 
 /**
  * Tests of {@link EditIssuesFilterActivity}
  */
-public class EditIssuesFilterActivityTest extends
-    ActivityTest<EditIssuesFilterActivity> {
+public class EditIssuesFilterActivityTest {
 
-    /**
-     * Create navigation_drawer_header_background
-     */
-    public EditIssuesFilterActivityTest() {
-        super(EditIssuesFilterActivity.class);
-    }
+    @Rule
+    public ActivityTestRule<EditIssuesFilterActivity> activityTestRule =
+            new ActivityTestRule<>(EditIssuesFilterActivity.class);
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() {
         Repository repo = InfoUtils.createRepoFromData("owner", "name");
-        IssueFilter filter = new IssueFilter(repo);
-        setActivityIntent(EditIssuesFilterActivity.createIntent(filter));
+        IssueFilter filter = new IssueFilter(repo, UUID.randomUUID().toString());
+        activityTestRule.launchActivity(EditIssuesFilterActivity.Companion.createIntent(filter));
     }
 }

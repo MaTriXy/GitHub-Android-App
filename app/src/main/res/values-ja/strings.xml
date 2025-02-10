@@ -53,7 +53,6 @@
 
     <!-- Loading messages -->
     <string name="loading_gist">Gist をロードしています…</string>
-    <string name="random_gist">ランダムな Gist をロードしています…</string>
     <string name="loading_more_issues">課題をさらにロードしています…</string>
     <string name="loading_issues">課題をロードしています…</string>
     <string name="loading_comments">コメントをロードしています…</string>
@@ -150,8 +149,6 @@
     <string name="select_milestone">マイルストーンを選択</string>
     <string name="select_labels">ラベルを選択</string>
     <string name="select_ref">ブランチまたはタグを選択</string>
-    <string name="enter_otp_code_title">認証コード</string>
-    <string name="enter_otp_code_message">2要素認証があなたのアカウントでは有効です。認証コードを入力して本人確認を行って下さい。</string>
     <string name="no_milestone">マイルストーンはありません</string>
     <string name="unassigned">担当者はいません</string>
     <string name="assigned">に割り当てられています</string>
@@ -235,7 +232,6 @@
     <string name="unfollowing_user">フォローを解除しています…</string>
     <string name="starring_repository">スターしています…</string>
     <string name="unstarring_repository">スターを解除しています…</string>
-    <string name="navigate_to">移動します…</string>
     <string name="navigate_to_user">%s に移動します</string>
     <string name="contributions">%d コミット</string>
 

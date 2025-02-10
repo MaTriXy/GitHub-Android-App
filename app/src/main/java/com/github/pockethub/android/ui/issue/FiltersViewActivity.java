@@ -17,30 +17,30 @@ package com.github.pockethub.android.ui.issue;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemLongClickListener;
-
+import androidx.appcompat.app.ActionBar;
 import com.github.pockethub.android.Intents.Builder;
 import com.github.pockethub.android.R;
-import com.github.pockethub.android.RequestFuture;
 import com.github.pockethub.android.core.issue.IssueFilter;
 import com.github.pockethub.android.persistence.AccountDataManager;
-import com.github.pockethub.android.ui.ConfirmDialogFragment;
-import com.github.pockethub.android.ui.BaseActivity;
+import com.github.pockethub.android.ui.DialogResultListener;
+import com.github.pockethub.android.ui.base.BaseActivity;
 import com.github.pockethub.android.ui.MainActivity;
-import com.google.inject.Inject;
+import io.reactivex.disposables.CompositeDisposable;
+
+import javax.inject.Inject;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
+import static com.github.pockethub.android.ui.issue.FilterListFragment.ARG_FILTER;
+import static com.github.pockethub.android.ui.issue.FilterListFragment.REQUEST_DELETE;
 
 /**
  * Activity to display a list of saved {@link IssueFilter} objects
  */
-public class FiltersViewActivity extends BaseActivity implements
-    OnItemLongClickListener {
+public class FiltersViewActivity extends BaseActivity implements DialogResultListener {
+
+    private CompositeDisposable disposables;
 
     /**
      * Create intent to browse issue filters
@@ -51,49 +51,45 @@ public class FiltersViewActivity extends BaseActivity implements
         return new Builder("repo.issues.filters.VIEW").toIntent();
     }
 
-    private static final String ARG_FILTER = "filter";
-
-    private static final int REQUEST_DELETE = 1;
-
     @Inject
-    private AccountDataManager cache;
+    protected AccountDataManager cache;
 
     private FilterListFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.issues_filter_list);
-
-        setSupportActionBar((android.support.v7.widget.Toolbar) findViewById(R.id.toolbar));
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(R.string.bookmarks);
-        actionBar.setIcon(R.drawable.ic_bookmark_white_24dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
         fragment = (FilterListFragment) getSupportFragmentManager()
-            .findFragmentById(android.R.id.list);
-        fragment.getListView().setOnItemLongClickListener(this);
+            .findFragmentById(R.id.list);
     }
 
     @Override
     public void onDialogResult(int requestCode, int resultCode, Bundle arguments) {
         if (requestCode == REQUEST_DELETE && resultCode == RESULT_OK) {
             IssueFilter filter = arguments.getParcelable(ARG_FILTER);
-            cache.removeIssueFilter(filter, new RequestFuture<IssueFilter>() {
-
-                @Override
-                public void success(IssueFilter response) {
-                    if (fragment != null)
-                        fragment.refresh();
-                }
-            });
-            return;
+            disposables.add(
+                    cache.removeIssueFilter(filter)
+                            .subscribe(response -> {
+                                if (fragment != null) {
+                                    fragment.listFetcher.forceRefresh();
+                                }
+                            })
+            );
         }
+    }
 
-        super.onDialogResult(requestCode, resultCode, arguments);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (disposables != null) {
+            disposables.dispose();
+        }
     }
 
     @Override
@@ -109,15 +105,4 @@ public class FiltersViewActivity extends BaseActivity implements
         }
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view,
-        int position, long id) {
-        IssueFilter filter = (IssueFilter) parent.getItemAtPosition(position);
-        Bundle args = new Bundle();
-        args.putParcelable(ARG_FILTER, filter);
-        ConfirmDialogFragment.show(this, REQUEST_DELETE,
-            getString(R.string.confirm_bookmark_delete_title),
-            getString(R.string.confirm_bookmark_delete_message), args);
-        return true;
-    }
 }

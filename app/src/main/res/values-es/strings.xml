@@ -52,7 +52,6 @@
 
     <!-- Mensajes de carga -->
     <string name="loading_gist">Cargando gist&#8230;</string>
-    <string name="random_gist">Cargando gist aleatorio&#8230;</string>
     <string name="loading_more_issues">Cargando más incidencias&#8230;</string>
     <string name="loading_issues">Cargando incidencias&#8230;</string>
     <string name="loading_comments">Cargando comentarios&#8230;</string>
@@ -149,8 +148,6 @@
     <string name="select_milestone">Seleccionar hito</string>
     <string name="select_labels">Seleccionar etiquetas</string>
     <string name="select_ref">Seleccionar rama o etiqueta</string>
-    <string name="enter_otp_code_title">Codigo de autenticación</string>
-    <string name="enter_otp_code_message">La autenticación de doble factor está habilitada para su cuenta. Ingrese su código de autenticación para confirmar su identidad.</string>
     <string name="no_milestone">No hay hitos</string>
     <string name="unassigned">No hay nadie asignado</string>
     <string name="assigned">está asignado</string>
@@ -242,7 +239,6 @@
     <string name="unfollowing_user">Dejando de seguir&#8230;</string>
     <string name="starring_repository">Marcando como destacado&#8230;</string>
     <string name="unstarring_repository">Desmarcando como destacado&#8230;</string>
-    <string name="navigate_to">Ir a&#8230;</string>
     <string name="navigate_to_user">Ir a %s</string>
     <string name="contributions">%d commits</string>
     <!-- Titulos de las pestañas, lo mas cortos posible -->

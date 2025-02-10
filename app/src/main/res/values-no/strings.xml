@@ -53,7 +53,6 @@
 
     <!-- Loading messages -->
     <string name="loading_gist">Laster Gist…</string>
-    <string name="random_gist">Laster tilfeldig Gist…</string>
     <string name="loading_more_issues">Laster flere Issues…</string>
     <string name="loading_issues">Laster saker…</string>
     <string name="loading_comments">Laster kommentarer…</string>
@@ -150,8 +149,6 @@
     <string name="select_milestone">Velg milepæl</string>
     <string name="select_labels">Velg etiketter</string>
     <string name="select_ref">Velg gren eller tagg</string>
-    <string name="enter_otp_code_title">Autentiseringskode</string>
-    <string name="enter_otp_code_message">Tofaktor-autentisering er slått på for din konto. Skriv inn autentiseringskoden for å bekrefte din identitet.</string>
     <string name="no_milestone">Ingen milepæl</string>
     <string name="unassigned">Ingen oppdragstaker satt</string>
     <string name="assigned">er på saken</string>
@@ -242,7 +239,6 @@
     <string name="unfollowing_user">Avfølger…</string>
     <string name="starring_repository">Stjernemerker…</string>
     <string name="unstarring_repository">Avstjerner…</string>
-    <string name="navigate_to">Navigér til…</string>
     <string name="navigate_to_user">Navigér til %s</string>
     <string name="contributions">%d innsjekkinger</string>
 

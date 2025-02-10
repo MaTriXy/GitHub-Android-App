@@ -16,12 +16,12 @@
 package com.github.pockethub.android.ui.gist;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
-import com.github.pockethub.android.ui.FragmentStatePagerAdapter;
+import com.github.pockethub.android.ui.base.FragmentStatePagerAdapter;
 
 import static com.github.pockethub.android.Intents.EXTRA_GIST_ID;
 
@@ -68,8 +68,9 @@ public class GistsPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         Object fragment = super.instantiateItem(container, position);
-        if (fragment instanceof GistFragment)
+        if (fragment instanceof GistFragment) {
             fragments.put(position, (GistFragment) fragment);
+        }
         return fragment;
     }
 
@@ -85,8 +86,9 @@ public class GistsPagerAdapter extends FragmentStatePagerAdapter {
     public GistsPagerAdapter onDialogResult(int position, int requestCode,
             int resultCode, Bundle arguments) {
         GistFragment fragment = fragments.get(position);
-        if (fragment != null)
+        if (fragment != null) {
             fragment.onDialogResult(requestCode, resultCode, arguments);
+        }
         return this;
     }
 }

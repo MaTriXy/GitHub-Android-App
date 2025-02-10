@@ -18,46 +18,28 @@ package com.github.pockethub.android.sync;
 import android.content.SyncResult;
 import android.database.SQLException;
 import android.util.Log;
-
 import com.github.pockethub.android.persistence.DatabaseCache;
-import com.github.pockethub.android.persistence.OrganizationRepositories;
+import com.github.pockethub.android.persistence.OrganizationRepositoriesFactory;
 import com.github.pockethub.android.persistence.Organizations;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
 import com.meisolsson.githubsdk.model.User;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
  * A cancelable sync operation to synchronize data for a given account
  */
+@AutoFactory
 public class SyncCampaign implements Runnable {
 
     private static final String TAG = "SyncCampaign";
 
-    /**
-     * Factory to create campaign
-     */
-    public interface Factory {
+    protected DatabaseCache cache;
 
-        /**
-         * Create campaign for result
-         *
-         * @param syncResult
-         * @return campaign
-         */
-        SyncCampaign create(SyncResult syncResult);
-    }
+    protected OrganizationRepositoriesFactory repos;
 
-    @Inject
-    private DatabaseCache cache;
-
-    @Inject
-    private OrganizationRepositories.Factory repos;
-
-    @Inject
-    private Organizations persistedOrgs;
+    protected Organizations persistedOrgs;
 
     private final SyncResult syncResult;
 
@@ -68,8 +50,13 @@ public class SyncCampaign implements Runnable {
      *
      * @param syncResult
      */
-    @Inject
-    public SyncCampaign(@Assisted SyncResult syncResult) {
+    public SyncCampaign(@Provided DatabaseCache cache,
+                        @Provided OrganizationRepositoriesFactory repos,
+                        @Provided Organizations persistedOrgs,
+                        SyncResult syncResult) {
+        this.cache = cache;
+        this.repos = repos;
+        this.persistedOrgs = persistedOrgs;
         this.syncResult = syncResult;
     }
 
@@ -79,7 +66,7 @@ public class SyncCampaign implements Runnable {
         try {
             orgs = cache.requestAndStore(persistedOrgs);
             syncResult.stats.numUpdates++;
-        } catch (IOException | SQLException e) {
+        } catch (SQLException e) {
             syncResult.stats.numIoExceptions++;
             Log.d(TAG, "Exception requesting users and orgs", e);
             return;
@@ -87,14 +74,15 @@ public class SyncCampaign implements Runnable {
 
         Log.d(TAG, "Syncing " + orgs.size() + " users and orgs");
         for (User org : orgs) {
-            if (cancelled)
+            if (cancelled) {
                 return;
+            }
 
             Log.d(TAG, "Syncing repos for " + org.login());
             try {
-                cache.requestAndStore(repos.under(org));
+                cache.requestAndStore(repos.create(org));
                 syncResult.stats.numUpdates++;
-            } catch (IOException | SQLException e) {
+            } catch (SQLException e) {
                 syncResult.stats.numIoExceptions++;
                 Log.d(TAG, "Exception requesting repositories", e);
             }

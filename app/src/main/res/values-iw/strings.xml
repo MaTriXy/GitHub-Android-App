@@ -47,7 +47,6 @@
   <string name="error_rendering_markdown">עיבוד הוזלה נכשל</string>
   <string name="error_users_search">חיפוש משתמשים נכשל</string>
   <string name="loading_gist">טוען תמצית…</string>
-  <string name="random_gist">טוען תמצית אקראית…</string>
   <string name="loading_more_issues">טוען עוד סוגיות…</string>
   <string name="loading_issues">טוען סוגיות…</string>
   <string name="loading_comments">טוען תגובות…</string>
@@ -131,8 +130,6 @@
   <string name="select_milestone">בחר אבן דרך</string>
   <string name="select_labels">בחר תוויות</string>
   <string name="select_ref">בחר ענף או תג</string>
-  <string name="enter_otp_code_title">קוד אימות</string>
-  <string name="enter_otp_code_message">אימות דו שלבי מופעל עבור חשבונך. הכנס קוד כדי לאמת זהותך.</string>
   <string name="no_milestone">אין אבן דרך</string>
   <string name="unassigned">אף אחד לא מוצב</string>
   <string name="assigned">משוייך</string>
@@ -220,8 +217,7 @@
   <string name="unfollowing_user">לא עוקב…</string>
   <string name="starring_repository">מסמן בכוכב…</string>
   <string name="unstarring_repository">מבטל סימון בכוכב…</string>
-  <string name="navigate_to">נווט אל…</string>
-  <string name="navigate_to_user">נווט אל %s</string>
+    <string name="navigate_to_user">נווט אל %s</string>
   <string name="tab_repositories">מאגרים</string>
   <string name="tab_users">משתמשים</string>
   <string name="tab_news">חדשות</string>

@@ -17,16 +17,15 @@ package com.github.pockethub.android.ui.issue;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import androidx.appcompat.app.ActionBar;
 import android.view.MenuItem;
 
+import com.github.pockethub.android.ui.MainActivity;
 import com.meisolsson.githubsdk.model.Repository;
 import com.github.pockethub.android.Intents.Builder;
 import com.github.pockethub.android.R;
 import com.github.pockethub.android.core.issue.IssueFilter;
-import com.github.pockethub.android.ui.BaseActivity;
-import com.github.pockethub.android.util.AvatarLoader;
-import com.google.inject.Inject;
+import com.github.pockethub.android.ui.base.BaseActivity;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
@@ -51,31 +50,25 @@ public class IssueBrowseActivity extends BaseActivity {
 
     private Repository repo;
 
-    @Inject
-    private AvatarLoader avatars;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        repo = getParcelableExtra(EXTRA_REPOSITORY);
-
         setContentView(R.layout.activity_repo_issue_list);
 
-        setSupportActionBar((android.support.v7.widget.Toolbar) findViewById(R.id.toolbar));
+        repo = getIntent().getParcelableExtra(EXTRA_REPOSITORY);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(repo.name());
         actionBar.setSubtitle(repo.owner().login());
         actionBar.setDisplayHomeAsUpEnabled(true);
-        avatars.bind(actionBar, repo.owner());
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent intent = FiltersViewActivity.createIntent();
+                finish();
+                Intent intent = new Intent(this, MainActivity.class);
                 intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
                 return true;

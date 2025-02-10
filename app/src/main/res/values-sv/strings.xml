@@ -55,7 +55,6 @@
 
     <!-- Loading messages -->
     <string name="loading_gist">Laddar gist&#8230;</string>
-    <string name="random_gist">Laddar slumpvald gist&#8230;</string>
     <string name="loading_more_issues">Laddar fler ärenden&#8230;</string>
     <string name="loading_issues">Laddar ärenden&#8230;</string>
     <string name="loading_comments">Laddar kommentarer&#8230;</string>
@@ -158,8 +157,6 @@
     <string name="select_milestone">Välj milstolpe</string>
     <string name="select_labels">Välj etiketter</string>
     <string name="select_ref">Välj branch eller tag</string>
-    <string name="enter_otp_code_title">Autentiseringskod</string>
-    <string name="enter_otp_code_message">Tvåfaktor-autentisering är aktiverad för ditt konto. Ange autentiseringskod för att verifiera din identitet.</string>
     <string name="no_milestone">Inga milstolpar</string>
     <string name="unassigned">Ingen har tilldelats detta</string>
     <string name="assigned">är tilldelad</string>
@@ -256,7 +253,6 @@
     <string name="unstarring_repository">Tar bort stjärnmärkning&#8230;</string>
     <string name="forking_repository">Forkar repot&#8230;</string>
     <string name="deleting_repository">Raderar repot&#8230;</string>
-    <string name="navigate_to">Navigera till&#8230;</string>
     <string name="navigate_to_user">Navigera till %s</string>
     <string name="contributions">%d commits</string>
 
